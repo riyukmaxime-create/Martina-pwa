@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-title" content="Martina Motion" />
+  <link rel="manifest" href="./manifest.json" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+  <title>Martina Motion</title>
+  <style>
+    :root{
+      --bg:#0b1020;--panel:#11182e;--panel2:#151f3b;--line:#243154;
+      --text:#edf2ff;--muted:#95a3c7;--accent:#6d7cff;--accent2:#8f5cff;
+      --good:#19d3a2;--warn:#f5c84a;--bad:#ff5c7a;--shadow:0 12px 40px rgba(0,0,0,.28);
+      --r18:18px;--r14:14px;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    html,body{height:100%;background:linear-gradient(180deg,#09101f 0%,#0b1020 100%);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;overflow:hidden}
+    button,input{font:inherit}
+    #app{height:100dvh;max-width:480px;margin:0 auto;display:flex;flex-direction:column;background:radial-gradient(1200px 600px at top,#111b36 0%,#0b1020 55%);position:relative}
+    .topbar{padding:16px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.05);backdrop-filter:blur(12px)}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;font-weight:800;box-shadow:0 10px 30px rgba(109,124,255,.35)}
+    .brand h1{font-size:18px;line-height:1.1}
+    .brand small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+    .top-actions{display:flex;gap:8px}
+    .icon-btn{width:40px;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--text)}
+    .icon-btn:active{transform:scale(.96)}
+    .views{flex:1;overflow:hidden;display:flex;flex-direction:column}
+    .view{display:none;flex:1;overflow:hidden;flex-direction:column}
+    .view.active{display:flex}
+    .tabs{display:flex;gap:8px;overflow-x:auto;padding:12px 16px 0;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{white-space:nowrap;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);color:var(--muted);padding:9px 14px;border-radius:999px}
+    .tab.active{background:linear-gradient(135deg,rgba(109,124,255,.24),rgba(143,92,255,.22));border-color:rgba(109,124,255,.35);color:#fff}
+    .scroll{flex:1;overflow-y:auto;padding:14px 16px 16px}
+    .scroll::-webkit-scrollbar{width:4px}
+    .scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border-radius:8px}
+    .card{background:rgba(17,24,46,.92);border:1px solid rgba(255,255,255,.06);border-radius:var(--r18);box-shadow:var(--shadow)}
+    .hero{padding:16px}
+    .hero-title{font-size:22px;font-weight:800;letter-spacing:-.3px}
+    .hero-sub{color:var(--muted);font-size:13px;margin-top:6px;line-height:1.45}
+    .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+    .pill{font-size:11px;padding:7px 10px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);color:var(--muted)}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+    .metric{padding:14px 12px;border-radius:16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06)}
+    .metric strong{display:block;font-size:22px}
+    .metric span{color:var(--muted);font-size:11px}
+    .section{margin-top:14px}
+    .section-title{display:flex;justify-content:space-between;align-items:center;margin:0 2px 10px}
+    .section-title h2{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+    .agenda-day{padding:14px}
+    .timeline{display:flex;flex-direction:column;gap:10px}
+    .slot{display:grid;grid-template-columns:48px 1fr;gap:10px;align-items:stretch}
+    .time-label{color:var(--muted);font-size:12px;padding-top:12px;text-align:right}
+    .event{padding:12px 12px 12px 14px;border-radius:16px;border:1px solid rgba(255,255,255,.06);background:linear-gradient(135deg,rgba(109,124,255,.12),rgba(143,92,255,.08))}
+    .event .title{font-weight:700;font-size:14px}
+    .event .meta{margin-top:4px;color:var(--muted);font-size:12px;display:flex;gap:8px;flex-wrap:wrap}
+    .agenda-empty{padding:18px;color:var(--muted);text-align:center}
+    .task-list{display:flex;flex-direction:column;gap:10px}
+    .task{padding:14px;border-radius:18px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);position:relative;overflow:hidden}
+    .task::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+    .task.high::before{background:var(--bad)}
+    .task.med::before{background:var(--warn)}
+    .task.low::before{background:var(--good)}
+    .task.done{opacity:.55}
+    .task.done .tt{text-decoration:line-through}
+    .task-top{display:flex;gap:10px;align-items:flex-start}
+    .check{width:22px;height:22px;border-radius:8px;border:2px solid rgba(255,255,255,.18);display:grid;place-items:center;flex:0 0 auto;margin-top:1px}
+    .check.on{background:var(--good);border-color:var(--good);color:#03130f}
+    .task-main{flex:1;min-width:0}
+    .tt{font-weight:700;font-size:14px;line-height:1.35}
+    .meta-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+    .tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.04em}
+    .tag.cat{background:rgba(109,124,255,.14);color:#bfc6ff}
+    .tag.time{background:rgba(25,211,162,.12);color:#8cffda}
+    .tag.alarm{background:rgba(245,200,74,.12);color:#ffe08b}
+    .tag.late{background:rgba(255,92,122,.12);color:#ff9fb0}
+    .progress-wrap{margin-top:12px}
+    .progress-head{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:6px}
+    .bar{height:6px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden}
+    .bar>div{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+    .ai{padding:14px}
+    .ai-box{display:flex;gap:12px;align-items:flex-start}
+    .ai-icon{width:38px;height:38px;border-radius:14px;background:linear-gradient(135deg,rgba(109,124,255,.25),rgba(143,92,255,.2));display:grid;place-items:center;flex:0 0 auto}
+    .ai-text{font-size:13px;line-height:1.55;color:#dbe3ff}
+    .ai-text strong{color:#fff}
+    .chat{display:flex;flex-direction:column;height:100%}
+    .msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px}
+    .msg{display:flex;gap:10px;max-width:94%}
+    .msg.user{align-self:flex-end;flex-direction:row-reverse}
+    .ava{width:32px;height:32px;border-radius:12px;display:grid;place-items:center;flex:0 0 auto}
+    .msg.ai .ava{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+    .msg.user .ava{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08)}
+    .bubble{padding:11px 13px;border-radius:16px;font-size:14px;line-height:1.5}
+    .msg.ai .bubble{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);border-top-left-radius:6px}
+    .msg.user .bubble{background:linear-gradient(135deg,var(--accent),var(--accent2));border-top-right-radius:6px;color:#fff}
+    .time{font-size:10px;color:var(--muted);margin-top:4px;text-align:right}
+    .suggestions{display:flex;gap:8px;overflow-x:auto;padding:0 16px 12px;scrollbar-width:none}
+    .suggestions::-webkit-scrollbar{display:none}
+    .sug{white-space:nowrap;padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);color:var(--text)}
+    .composer{padding:12px 16px 16px;border-top:1px solid rgba(255,255,255,.06);display:flex;gap:10px}
+    .input{flex:1;display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:0 14px}
+    .input input{width:100%;height:46px;background:transparent;border:none;outline:none;color:var(--text)}
+    .send{width:46px;height:46px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:18px}
+    .bottom{display:flex;gap:8px;padding:10px 10px calc(10px + env(safe-area-inset-bottom));border-top:1px solid rgba(255,255,255,.06);background:rgba(10,15,31,.9);backdrop-filter:blur(14px)}
+    .nav{flex:1;border:none;background:transparent;color:var(--muted);padding:9px 8px;border-radius:14px;display:flex;flex-direction:column;align-items:center;gap:3px}
+    .nav.active{background:rgba(109,124,255,.14);color:#fff}
+    .nav span{font-size:10px;font-weight:700;letter-spacing:.02em}
+    .overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;align-items:flex-end;z-index:50}
+    .overlay.open{display:flex}
+    .modal{width:100%;max-width:480px;margin:0 auto;background:#10182d;border-radius:24px 24px 0 0;padding:18px 16px 18px;border-top:1px solid rgba(255,255,255,.06)}
+    .handle{width:42px;height:4px;border-radius:99px;background:rgba(255,255,255,.15);margin:0 auto 14px}
+    .modal h3{font-size:18px;margin-bottom:14px}
+    .form{display:grid;gap:12px}
+    .field label{display:block;font-size:11px;letter-spacing:.12em;color:var(--muted);margin-bottom:6px;text-transform:uppercase}
+    .field input{width:100%;height:46px;border-radius:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--text);padding:0 12px;outline:none}
+    .pri{display:flex;gap:8px}
+    .pri button{flex:1;height:40px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.04);color:var(--muted)}
+    .pri button.sel.high{background:rgba(255,92,122,.14);border-color:rgba(255,92,122,.3);color:#ffb7c4}
+    .pri button.sel.med{background:rgba(245,200,74,.13);border-color:rgba(245,200,74,.3);color:#ffe399}
+    .pri button.sel.low{background:rgba(25,211,162,.13);border-color:rgba(25,211,162,.25);color:#9ff2dc}
+    .switch{display:flex;justify-content:space-between;align-items:center;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07)}
+    .btn{width:100%;height:48px;border:none;border-radius:16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-weight:800}
+    .empty{padding:20px;text-align:center;color:var(--muted)}
+  </style>
+</head>
+<body>
+<div id="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo">M</div>
+      <div>
+        <h1>Martina Motion</h1>
+        <small>Planner intelligent</small>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" onclick="openModal()">＋</button>
+    </div>
+  </div>
+
+  <div class="views">
+    <div class="view active" id="view-dashboard">
+      <div class="tabs">
+        <button class="tab active" onclick="setDash('today', this)">Aujourd'hui</button>
+        <button class="tab" onclick="setDash('week', this)">Semaine</button>
+        <button class="tab" onclick="setDash('tasks', this)">Tâches</button>
+      </div>
+      <div class="scroll" id="dash-scroll">
+        <div class="card hero">
+          <div class="hero-title">Votre journée est organisée.</div>
+          <div class="hero-sub" id="hero-sub">Planifiez, priorisez et avancez sans surcharge.</div>
+          <div class="pill-row">
+            <div class="pill" id="pill-total">0 tâches</div>
+            <div class="pill" id="pill-done">0 terminées</div>
+            <div class="pill" id="pill-pending">0 en attente</div>
+            <div class="pill" id="pill-alarm">0 alarmes</div>
+          </div>
+          <div class="grid3">
+            <div class="metric"><strong id="m1">0</strong><span>Aujourd'hui</span></div>
+            <div class="metric"><strong id="m2">0%</strong><span>Progression</span></div>
+            <div class="metric"><strong id="m3">0</strong><span>Urgentes</span></div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-head"><span>Avancement</span><span id="prog-label">0%</span></div>
+            <div class="bar"><div id="prog-bar" style="width:0%"></div></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><h2>Agenda</h2><span style="color:var(--muted);font-size:12px" id="agenda-date"></span></div>
+          <div class="card agenda-day" id="agenda-box"></div>
+        </div>
+
+        <div class="section">
+          <div class="section-title"><h2>Résumé IA</h2></div>
+          <div class="card ai">
+            <div class="ai-box">
+              <div class="ai-icon">✨</div>
+              <div class="ai-text" id="ai-text">Chargement...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="view-tasks">
+      <div class="tabs" id="task-tabs">
+        <button class="tab active" onclick="filterTasks('all', this)">Toutes</button>
+        <button class="tab" onclick="filterTasks('today', this)">Aujourd'hui</button>
+        <button class="tab" onclick="filterTasks('high', this)">Urgentes</button>
+        <button class="tab" onclick="filterTasks('done', this)">Terminées</button>
+      </div>
+      <div class="scroll">
+        <div class="section-title"><h2>Projets et tâches</h2><span style="color:var(--muted);font-size:12px">Vue Motion</span></div>
+        <div class="task-list" id="task-list"></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-chat">
+      <div class="chat">
+        <div class="msgs" id="chat-msgs"></div>
+        <div class="suggestions">
+          <button class="sug" onclick="sendSugg(this)">Voir mes tâches du jour</button>
+          <button class="sug" onclick="sendSugg(this)">Planifie ma journée</button>
+          <button class="sug" onclick="sendSugg(this)">Quelles sont mes urgences ?</button>
+          <button class="sug" onclick="sendSugg(this)">Ajoute une tâche</button>
+        </div>
+        <div class="composer">
+          <div class="input"><input id="chat-input" placeholder="Demandez à Martina..." onkeydown="if(event.key==='Enter') sendMsg()"></div>
+          <button class="send" onclick="sendMsg()">➤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <button class="nav active" id="nav-dashboard" onclick="switchView('dashboard')">◧<span>Agenda</span></button>
+    <button class="nav" id="nav-tasks" onclick="switchView('tasks')">☰<span>Tâches</span></button>
+    <button class="nav" id="nav-chat" onclick="switchView('chat')">◌<span>IA</span></button>
+  </div>
+</div>
+
+<div class="overlay" id="modal" onclick="if(event.target===this) closeModal()">
+  <div class="modal">
+    <div class="handle"></div>
+    <h3>Nouvelle tâche</h3>
+    <div class="form">
+      <div class="field"><label>Titre</label><input id="f-title" placeholder="Ex: Appeler le client"></div>
+      <div class="field"><label>Catégorie</label><input id="f-cat" placeholder="Travail, Santé, Personnel..."></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="field"><label>Date</label><input id="f-date" type="date"></div>
+        <div class="field"><label>Heure</label><input id="f-time" type="time"></div>
+      </div>
+      <div class="field">
+        <label>Priorité</label>
+        <div class="pri">
+          <button class="sel high" onclick="setPri('high',this)">Haute</button>
+          <button class="med" onclick="setPri('med',this)">Moyenne</button>
+          <button class="low" onclick="setPri('low',this)">Basse</button>
+        </div>
+      </div>
+      <div class="switch">
+        <div>
+          <div style="font-weight:700">Activer l'alarme</div>
+          <div style="font-size:12px;color:var(--muted)">Rappel automatique à l'heure prévue</div>
+        </div>
+        <input type="checkbox" id="f-alarm" checked>
+      </div>
+      <button class="btn" onclick="addTask()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const today = () => new Date().toISOString().slice(0,10);
+const fmtTime = d => String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+let tasks = JSON.parse(localStorage.getItem('martina_motion_tasks')||'[]');
+let taskFilter='all', currentPriority='high', currentAlarmTask=null;
+
+if(!tasks.length){
+  const n=new Date(), d=today(), t=(h,m)=>String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  tasks=[
+    {id:1,title:'Réunion équipe',cat:'Travail',date:d,time:t(n.getHours()+1,0),priority:'high',alarm:true,done:false},
+    {id:2,title:'Envoyer le rapport',cat:'Travail',date:d,time:t(n.getHours()+2,30),priority:'high',alarm:true,done:false},
+    {id:3,title:'Appel client',cat:'Personnel',date:d,time:t(n.getHours()+4,0),priority:'med',alarm:true,done:false},
+    {id:4,title:'Revoir les messages',cat:'Admin',date:d,time:t(n.getHours()+5,0),priority:'low',alarm:false,done:false}
+  ];
+  save();
+}
+
+function save(){localStorage.setItem('martina_motion_tasks',JSON.stringify(tasks));renderAll();}
+function switchView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.nav').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  document.getElementById('nav-'+v).classList.add('active');
+  if(v==='dashboard') renderDashboard();
+  if(v==='tasks') renderTasks();
+  if(v==='chat') renderChat();
+}
+function setDash(_,btn){document.querySelectorAll('#view-dashboard .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderDashboard();}
+function filterTasks(f,btn){taskFilter=f;document.querySelectorAll('#task-tabs .tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTasks();}
+function setPri(p,btn){currentPriority=p;document.querySelectorAll('.pri button').forEach(b=>b.classList.remove('sel'));btn.classList.add('sel');}
+function openModal(){document.getElementById('modal').classList.add('open');document.getElementById('f-date').value=today();document.getElementById('f-time').value=fmtTime(new Date(Date.now()+3600000));}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function addTask(){
+  const title=document.getElementById('f-title').value.trim();
+  if(!title){document.getElementById('f-title').focus();return;}
+  tasks.unshift({id:Date.now(),title,cat:document.getElementById('f-cat').value.trim()||'Général',date:document.getElementById('f-date').value||today(),time:document.getElementById('f-time').value||'09:00',priority:currentPriority,alarm:document.getElementById('f-alarm').checked,done:false});
+  document.getElementById('f-title').value='';document.getElementById('f-cat').value='';save();closeModal();
+}
+function toggleDone(id){const t=tasks.find(x=>x.id===id);if(t){t.done=!t.done;save();}}
+function toggleAlarm(id,val){const t=tasks.find(x=>x.id===id);if(t){t.alarm=val;save();}}
+
+function renderStats(){
+  const total=tasks.length,done=tasks.filter(t=>t.done).length,pending=tasks.filter(t=>!t.done).length,alarm=tasks.filter(t=>t.alarm&&!t.done).length,todayCount=tasks.filter(t=>t.date===today()).length,urgent=pending.filter(t=>t.priority==='high').length,pct=total?Math.round(done/total*100):0;
+  document.getElementById('pill-total').textContent=total+' tâches';
+  document.getElementById('pill-done').textContent=done+' terminées';
+  document.getElementById('pill-pending').textContent=pending+' en attente';
+  document.getElementById('pill-alarm').textContent=alarm+' alarmes';
+  document.getElementById('m1').textContent=todayCount;
+  document.getElementById('m2').textContent=pct+'%';
+  document.getElementById('m3').textContent=urgent;
+  document.getElementById('prog-label').textContent=pct+'%';
+  document.getElementById('prog-bar').style.width=pct+'%';
+  document.getElementById('agenda-date').textContent=new Date().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
+  document.getElementById('hero-sub').textContent = pending ? `Vous avez ${pending} tâches restantes. Priorisez l'essentiel et laissez Martina organiser le reste.` : 'Tout est terminé. Ajoutez une nouvelle tâche pour commencer.';
+  document.getElementById('ai-text').innerHTML = pending ? `Vous avez <strong>${urgent} tâches urgentes</strong>, ${todayCount} prévues aujourd'hui et un taux de complétion de <strong>${pct}%</strong>. Martina vous conseille de traiter les tâches longues le matin et de regrouper les tâches courtes en fin de journée.` : `Excellent travail. Votre journée est vide pour le moment, vous pouvez planifier la suite sans surcharge.`;
+  renderAgenda(tasks.filter(t=>!t.done).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time)).slice(0,4));
+}
+
+function renderAgenda(list){
+  const box=document.getElementById('agenda-box');
+  if(!list.length){box.innerHTML='<div class="agenda-empty">Aucune tâche à afficher. Ajoutez une priorité ou planifiez votre journée.</div>';return;}
+  box.innerHTML='<div class="timeline">'+list.map(t=>`<div class="slot"><div class="time-label">${t.time||'--:--'}</div><div class="event"><div class="title">${escapeHtml(t.title)}</div><div class="meta"><span>${escapeHtml(t.cat||'Général')}</span><span>•</span><span>${t.priority==='high'?'Urgent':t.priority==='med'?'Moyen':'Bas'}</span>${t.alarm?' <span>•</span><span>Alarme active</span>':''}</div></div></div>`).join('')+'</div>';
+}
+
+function renderTasks(){
+  renderStats();
+  let list=[...tasks];
+  if(taskFilter==='today') list=list.filter(t=>t.date===today());
+  if(taskFilter==='high') list=list.filter(t=>t.priority==='high'&&!t.done);
+  if(taskFilter==='done') list=list.filter(t=>t.done);
+  const el=document.getElementById('task-list');
+  if(!list.length){el.innerHTML='<div class="empty">Aucune tâche ici pour le moment.</div>';return;}
+  el.innerHTML=list.sort((a,b)=>(a.done-b.done)||((a.date+a.time).localeCompare(b.date+b.time))).map(t=>{
+    const late=!t.done&&t.date<today();
+    return `<div class="task ${t.priority} ${t.done?'done':''}"><div class="task-top"><div class="check ${t.done?'on':''}" onclick="toggleDone(${t.id})">${t.done?'✓':''}</div><div class="task-main"><div class="tt">${escapeHtml(t.title)}</div><div class="meta-tags"><span class="tag cat">${escapeHtml(t.cat||'Général')}</span>${t.time?`<span class="tag time">${t.time}</span>`:''}${t.alarm?`<span class="tag alarm">Alarme</span>`:''}${late?`<span class="tag late">En retard</span>`:''}</div></div></div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.06)"><span style="color:var(--muted);font-size:12px">${t.date}</span><label style="display:flex;align-items:center;gap:8px;color:var(--muted);font-size:12px"><input type="checkbox" ${t.alarm?'checked':''} onchange="toggleAlarm(${t.id},this.checked)"> Alarme</label></div></div>`;
+  }).join('');
+}
+
+function renderChat(){
+  const box=document.getElementById('chat-msgs');
+  if(box.children.length) return;
+  box.innerHTML=`<div class="msg ai"><div class="ava">M</div><div><div class="bubble">Bonjour, je suis Martina. Je peux organiser votre journée, prioriser les tâches et vous aider à garder un rythme clair.</div><div class="time">maintenant</div></div></div>`;
+}
+
+function sendSugg(btn){document.getElementById('chat-input').value=btn.textContent;sendMsg();}
+function addMsg(role,text){
+  const box=document.getElementById('chat-msgs');
+  const time=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'});
+  box.insertAdjacentHTML('beforeend',`<div class="msg ${role}"><div class="ava">${role==='ai'?'M':'U'}</div><div><div class="bubble">${escapeHtml(text).replace(/\n/g,'<br>')}</div><div class="time">${time}</div></div></div>`);
+  box.scrollTop=box.scrollHeight;
+}
+function sendMsg(){
+  const input=document.getElementById('chat-input');
+  const msg=input.value.trim(); if(!msg) return;
+  input.value=''; addMsg('user',msg);
+  const m=msg.toLowerCase();
+  const pending=tasks.filter(t=>!t.done), urg=pending.filter(t=>t.priority==='high'), todayTasks=tasks.filter(t=>t.date===today()&&!t.done);
+  let reply='Je peux planifier votre journée, résumer vos priorités ou vous aider à ajouter une tâche.';
+  if(m.includes('aujourd')||m.includes('jour')) reply=todayTasks.length?`Aujourd'hui, vous avez ${todayTasks.length} tâches. Commencez par: ${todayTasks.slice(0,3).map(t=>t.title).join(', ')}.`:'Vous n\'avez rien de prévu aujourd\'hui.';
+  else if(m.includes('urgent')||m.includes('retard')) reply=urg.length?`Vous avez ${urg.length} tâches urgentes. Traitez-les en premier: ${urg.slice(0,3).map(t=>t.title).join(', ')}.`:'Aucune urgence détectée.';
+  else if(m.includes('bilan')||m.includes('productiv')) reply=`Bilan: ${tasks.filter(t=>t.done).length}/${tasks.length} tâches terminées. ${pending.length} restent à faire.`;
+  addMsg('ai',reply);
+}
+function renderAll(){renderDashboard(); if(document.getElementById('view-tasks').classList.contains('active')) renderTasks(); renderChat();}
+function renderDashboard(){renderStats();}
+function escapeHtml(s){return String(s||'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')}
+renderAll();
+setInterval(()=>{const now=today(), tm=fmtTime(new Date());tasks.forEach(t=>{if(t.alarm&&!t.done&&t.date===now&&t.time===tm&&!currentAlarmTask){currentAlarmTask=t;addMsg('ai',`⏰ ${t.title} est programmé maintenant.');}});},30000);
+if('Notification' in window) Notification.requestPermission();
+if('serviceWorker' in navigator){navigator.serviceWorker.register('./sw.js').catch(()=>{});}
+</script>
+</body>
+</html>
